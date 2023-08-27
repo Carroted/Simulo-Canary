@@ -699,7 +699,8 @@ class SimuloViewerCanvas implements SimuloViewer {
         // the shapes are verts
         for (var i = 0; i < this.shapes.length; i++) {
             var shape = this.shapes[i];
-            var shapeSize = 1; // width of shape
+            let shapeHeight = 0;
+            let shapeWidth = 0;
             this.ctx.fillStyle = shape.color;
             if (shape.border) {
                 this.ctx.strokeStyle = shape.border;
@@ -713,55 +714,45 @@ class SimuloViewerCanvas implements SimuloViewer {
                 let shapePolygon = shape as SimuloPolygon;
                 if (!shapePolygon.points) {
                     shapePolygon.vertices.forEach(function (vert) {
-                        if (Math.abs(vert.x) > shapeSize) shapeSize = Math.abs(vert.x);
-                        if (Math.abs(vert.y) > shapeSize) shapeSize = Math.abs(vert.y);
+                        if (Math.abs(vert.x) > shapeWidth) shapeWidth = Math.abs(vert.x);
+                        if (Math.abs(vert.y) > shapeHeight) shapeHeight = Math.abs(vert.y);
                     });
                 }
                 else {
                     shapePolygon.points.forEach(function (vert) {
-                        if (Math.abs(vert.x) > shapeSize) shapeSize = Math.abs(vert.x);
-                        if (Math.abs(vert.y) > shapeSize) shapeSize = Math.abs(vert.y);
+                        if (Math.abs(vert.x) > shapeWidth) shapeWidth = Math.abs(vert.x);
+                        if (Math.abs(vert.y) > shapeHeight) shapeHeight = Math.abs(vert.y);
                     });
                 }
             }
             else if (shape.type === 'rectangle') {
                 let shapeRectangle = shape as SimuloRectangle;
-                shapeSize = Math.abs(shapeRectangle.width / 2);
+                shapeWidth = shapeRectangle.width;
+                shapeHeight = shapeRectangle.height;
             }
-
-            shapeSize = Math.abs(shapeSize / 2.1);
+            else if (shape.type === 'circle') {
+                let shapeCircle = shape as SimuloCircle;
+                shapeWidth = shapeCircle.radius as number;
+                shapeHeight = shapeCircle.radius as number;
+            }
 
             if (shape.image) {
                 var image = this.getImage(shape.image);
                 if (image) {
                     this.ctx.save();
-                    this.ctx.translate(shape.x, shape.y);
-                    this.ctx.rotate(shape.angle);
+                    let imageTranslation = shape.imageTransformations ? shape.imageTransformations.translate : [0, 0]
+                    let imageScale = shape.imageTransformations ? shape.imageTransformations.scale : 1;
+                    let imageRotation = shape.imageTransformations ? shape.imageTransformations.rotate : 0;
+                    this.ctx.translate(shape.x + imageTranslation[0], shape.y + imageTranslation[1]);
+                    this.ctx.rotate(shape.angle + imageRotation);
                     // rotate 180deg
                     this.ctx.rotate(Math.PI);
                     // width is determined based on shape size. height is determined based on image aspect ratio
-                    if (!shape.stretchImage) {
-                        try {
-                            this.ctx.drawImage(image, -shapeSize, -shapeSize * (image.height / image.width), shapeSize * 2, shapeSize * 2 * (image.height / image.width));
-                        }
-                        catch (e) {
-                            console.error(e);
-                        }
+                    try {
+                        this.ctx.drawImage(image, -shapeWidth, -shapeHeight, shapeWidth * 2, shapeHeight * 2);
                     }
-                    else {
-                        try {
-                            // instead we use the rect height for height of the image. if its not a rectangle, shapesize
-                            if (shape.type === 'rectangle') {
-                                let shapeRectangle = shape as SimuloRectangle;
-                                this.ctx.drawImage(image, -shapeSize, -shapeSize * (shapeRectangle.height / shapeRectangle.width), shapeSize * 2, shapeSize * 2 * (shapeRectangle.height / shapeRectangle.width));
-                            }
-                            else {
-                                this.ctx.drawImage(image, -shapeSize, -shapeSize, shapeSize * 2, shapeSize * 2);
-                            }
-                        }
-                        catch (e) {
-                            console.error(e);
-                        }
+                    catch (e) {
+                        console.error(e);
                     }
                     this.ctx.restore();
                 }

@@ -818,22 +818,19 @@ details summary {
 }
 
 .starting-popup .themes {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
   margin-top: 1rem;
 }
 
 .theme-option {
-  width: 3rem;
   height: 14rem;
   border-radius: 1rem;
   position: relative;
   overflow: hidden;
   flex-grow: 1;
   flex-shrink: 1;
-  margin-right: 0.5rem;
 }
 
 .theme-option:last-child {

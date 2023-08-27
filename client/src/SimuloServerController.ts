@@ -266,8 +266,29 @@ class SimuloServerController {
                         });
                     }
                 }
-                this.creatingObjects[uuid].currentX = formatted.data.x;
-                this.creatingObjects[uuid].currentY = formatted.data.y;
+                // ok so basically, if formatted.data.shift, we make this square
+                // we will do that with difference between currentX and formatted.data.x, etc, and math.max
+                if (!formatted.data.shift) {
+                    // not square
+                    this.creatingObjects[uuid].currentX = formatted.data.x;
+                    this.creatingObjects[uuid].currentY = formatted.data.y;
+                }
+                else {
+                    // square
+                    var dx = formatted.data.x - this.creatingObjects[uuid].x;
+                    var dy = formatted.data.y - this.creatingObjects[uuid].y;
+                    let size = Math.max(Math.abs(dx), Math.abs(dy));
+                    let posX = this.creatingObjects[uuid].x + size;
+                    let posY = this.creatingObjects[uuid].y + size;
+                    if (dx < 0) {
+                        posX = this.creatingObjects[uuid].x - size;
+                    }
+                    if (dy < 0) {
+                        posY = this.creatingObjects[uuid].y - size;
+                    }
+                    this.creatingObjects[uuid].currentX = posX;
+                    this.creatingObjects[uuid].currentY = posY;
+                }
             }
 
             if (this.creatingSprings[uuid]) {
@@ -583,12 +604,31 @@ class SimuloServerController {
                 }
                 if (this.creatingObjects[uuid].shape == "rectangle") {
                     // Calculate the size of the new rectangle
-                    const width = Math.abs(
-                        formatted.data.x - this.creatingObjects[uuid].x
+
+                    let pointB = [formatted.data.x, formatted.data.y];
+                    if (formatted.data.shift) {
+                        var dx = formatted.data.x - this.creatingObjects[uuid].x;
+                        var dy = formatted.data.y - this.creatingObjects[uuid].y;
+                        let size = Math.max(Math.abs(dx), Math.abs(dy));
+                        let posX = this.creatingObjects[uuid].x + size;
+                        let posY = this.creatingObjects[uuid].y + size;
+                        if (dx < 0) {
+                            posX = this.creatingObjects[uuid].x - size;
+                        }
+                        if (dy < 0) {
+                            posY = this.creatingObjects[uuid].y - size;
+                        }
+                        pointB = [posX, posY];
+                    }
+
+                    let width = Math.abs(
+                        pointB[0] - this.creatingObjects[uuid].x
                     );
-                    const height = Math.abs(
-                        formatted.data.y - this.creatingObjects[uuid].y
+                    let height = Math.abs(
+                        pointB[1] - this.creatingObjects[uuid].y
                     );
+
+
 
                     var bodyData: object = {
                         color: this.creatingObjects[uuid].color,
@@ -599,7 +639,7 @@ class SimuloServerController {
                         id: 92797981789171,
                         sound: 'impact.wav',
                         image: null,
-
+                        flipImage: true
                     };
                     // define verts of the rectangle
                     const verts: [x: number, y: number][] = [
@@ -609,19 +649,35 @@ class SimuloServerController {
                         [-width / 2, height / 2],
                     ];
 
-                    let rectangle = this.physicsServer.addPolygon(verts, [(formatted.data.x + this.creatingObjects[uuid].x) / 2, (formatted.data.y + this.creatingObjects[uuid].y) / 2], 0, 1, 0.5, 0.5, bodyData, false, false);
+                    let rectangle = this.physicsServer.addPolygon(verts, [(pointB[0] + this.creatingObjects[uuid].x) / 2, (pointB[1] + this.creatingObjects[uuid].y) / 2], 0, 1, 0.5, 0.5, bodyData, false, false);
 
                     // Remove the creatingObject for this uuid
                     delete this.creatingObjects[uuid];
                 } else if (this.creatingObjects[uuid].shape == "select") {
                     // select draws a box with the same properties, but instead of creating a new object, it selects all objects in the box. for now, we'll just console.log the objects since we dont have a selection system yet
                     if (!this.creatingObjects[uuid].moving) {
+                        let pointB = [formatted.data.x, formatted.data.y];
+                        // square
+                        if (formatted.data.shift) {
+                            var dx = formatted.data.x - this.creatingObjects[uuid].x;
+                            var dy = formatted.data.y - this.creatingObjects[uuid].y;
+                            let size = Math.max(Math.abs(dx), Math.abs(dy));
+                            let posX = this.creatingObjects[uuid].x + size;
+                            let posY = this.creatingObjects[uuid].y + size;
+                            if (dx < 0) {
+                                posX = this.creatingObjects[uuid].x - size;
+                            }
+                            if (dy < 0) {
+                                posY = this.creatingObjects[uuid].y - size;
+                            }
+                            pointB = [posX, posY];
+                        }
                         // now we query world
                         var bodies = this.physicsServer.getObjectsInRect(
                             // point A
                             [this.creatingObjects[uuid].x, this.creatingObjects[uuid].y],
                             // point B
-                            [formatted.data.x, formatted.data.y]
+                            pointB as [x: number, y: number]
                         );
 
                         // if theres more than one body, ignore id 1 (the floor)
@@ -698,7 +754,8 @@ class SimuloServerController {
                         id: 92797981789171,
                         sound: 'impact.wav',
                         image: null,
-                        circleCake: this.creatingObjects[uuid].circleCake
+                        circleCake: this.creatingObjects[uuid].circleCake,
+                        flipImage: true
                     };
 
                     let circle = this.physicsServer.addCircle(radius, [posX, posY], 0, 1, 0.5, 0.5, bodyData, false);
@@ -722,6 +779,7 @@ class SimuloServerController {
                             this.theme.newObjects.borderScaleWithZoom,
                         sound: 'impact.wav',
                         image: null,
+                        flipImage: true
                     }, false);
 
                     delete this.creatingObjects[uuid];

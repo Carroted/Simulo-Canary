@@ -39,6 +39,7 @@ assets/textures/add_rectangle.png
 assets/textures/add_particle.png
 assets/textures/person_purple.png
 assets/textures/car.png
+assets/textures/laserpen.png
 assets/textures/basic_car.png
 assets/textures/tools/fixjoint.png
 assets/textures/tools/spring.png
@@ -80,6 +81,7 @@ assets/textures/select.png
 assets/textures/add_circle_old.png
 assets/textures/add_spring.png
 assets/textures/person.png
+assets/textures/cursor_old.png
 manifest.json
 src/SimuloNetworkClient/socket.io.esm.min.js
 src/Box2D.wasm

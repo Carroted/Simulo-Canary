@@ -24768,6 +24768,11 @@ class SimuloObject {
       }
     }
   }
+  get flipImage() {
+    let parentData = this._body.GetUserData();
+    let objectData = parentData.objects[this.id];
+    return objectData.flipImage ?? false;
+  }
 }
 
 class SimuloJoint {
@@ -24944,7 +24949,8 @@ class SimuloPhysicsServer {
       borderScaleWithZoom: data["borderScaleWithZoom"] ?? false,
       circleCake: data["circleCake"] ?? false,
       image: data["image"] ?? null,
-      zDepth: this.highestZDepth++
+      zDepth: this.highestZDepth++,
+      flipImage: data["flipImage"] ?? false
     };
     if (decompose) {
       var triangles = earcut_min.default(vertices.flat());
@@ -25148,7 +25154,8 @@ class SimuloPhysicsServer {
       borderScaleWithZoom: data["borderScaleWithZoom"] ?? false,
       circleCake: data["circleCake"] ?? false,
       image: data["image"] ?? null,
-      zDepth: this.highestZDepth++
+      zDepth: this.highestZDepth++,
+      flipImage: true
     };
     parentData.objects[id] = objectData;
     var object = new SimuloObject(this, body, id);
@@ -25221,7 +25228,8 @@ class SimuloPhysicsServer {
       borderScaleWithZoom: false,
       circleCake: false,
       image: null,
-      zDepth: this.highestZDepth++
+      zDepth: this.highestZDepth++,
+      flipImage: true
     };
     groundParentData.id = 1;
     groundParentData.objects[0] = groundData;
@@ -25295,6 +25303,7 @@ class SimuloPhysicsServer {
       circleCake: false,
       image: null,
       zDepth: this.highestZDepth++,
+      flipImage: true,
       points: [
         [floorShape.get_m_vertices(0).get_x(), floorShape.get_m_vertices(0).get_y()],
         [floorShape.get_m_vertices(1).get_x(), floorShape.get_m_vertices(1).get_y()],
@@ -25594,7 +25603,8 @@ class SimuloPhysicsServer {
         points: o.points,
         radius: o.radius,
         name: o.name ? o.name : null,
-        parentID: o.parentID
+        parentID: o.parentID,
+        flipImage: o.flipImage
       };
     });
     return savedStuff;
@@ -25642,7 +25652,8 @@ class SimuloPhysicsServer {
             image: o.image,
             sound: o.sound,
             color: o.color,
-            name: o.name === null ? undefined : o.name
+            name: o.name === null ? undefined : o.name,
+            flipImage: o.flipImage
           }, o.isStatic);
         }
       } else if (o.type === SimuloObjectType.CIRCLE) {
@@ -25654,7 +25665,8 @@ class SimuloPhysicsServer {
           image: o.image,
           sound: o.sound,
           color: o.color,
-          name: o.name === null ? undefined : o.name
+          name: o.name === null ? undefined : o.name,
+          flipImage: o.flipImage
         }, o.isStatic);
       }
       if (obj) {
@@ -25819,7 +25831,12 @@ class SimuloPhysicsServer {
             circleCake: objectData.circleCake,
             image: objectData.image,
             id: objectData.id,
-            zDepth: objectData.zDepth
+            zDepth: objectData.zDepth,
+            imageTransformations: {
+              scale: 1,
+              rotate: objectData.flipImage ? Math.PI : 0,
+              translate: [0, 0]
+            }
           });
         } else if (shapeType == box2D.b2Shape.e_polygon) {
           const polygonShape = box2D.castObject(shape, box2D.b2PolygonShape);
@@ -25852,7 +25869,12 @@ class SimuloPhysicsServer {
               image: objectData.image,
               id: objectData.id,
               zDepth: objectData.zDepth,
-              decomposedParts: objectData.decomposedParts
+              decomposedParts: objectData.decomposedParts,
+              imageTransformations: {
+                scale: 1,
+                rotate: objectData.flipImage ? Math.PI : 0,
+                translate: [0, 0]
+              }
             });
           } else {
             shapes.push({
@@ -25868,7 +25890,12 @@ class SimuloPhysicsServer {
               image: objectData.image,
               id: objectData.id,
               zDepth: objectData.zDepth,
-              decomposedParts: objectData.decomposedParts
+              decomposedParts: objectData.decomposedParts,
+              imageTransformations: {
+                scale: 1,
+                rotate: objectData.flipImage ? Math.PI : 0,
+                translate: [0, 0]
+              }
             });
           }
         } else if (shapeType == box2D.b2Shape.e_edge) {
@@ -25895,7 +25922,12 @@ class SimuloPhysicsServer {
             borderScaleWithZoom: objectData.borderScaleWithZoom,
             image: objectData.image,
             id: objectData.id,
-            zDepth: objectData.zDepth
+            zDepth: objectData.zDepth,
+            imageTransformations: {
+              scale: 1,
+              rotate: objectData.flipImage ? Math.PI : 0,
+              translate: [0, 0]
+            }
           });
         } else {
         }
@@ -26509,6 +26541,162 @@ var themes_default = {
     systemCursor: true,
     toolIconSize: 1.8,
     toolIconOffset: [-1.5, -0.8]
+  },
+  autumn: {
+    displayName: "Autumn",
+    author: "asour",
+    description: "hmmmm",
+    background: "#6491d9",
+    person: {
+      color: "#99e077",
+      border: "#111111a0",
+      borderWidth: 1,
+      borderScaleWithZoom: true
+    },
+    ground: {
+      color: "#a3b00d",
+      border: "#111111a0",
+      borderWidth: 1,
+      borderScaleWithZoom: true
+    },
+    newObjects: {
+      color: {
+        hueMin: 0,
+        hueMax: 65,
+        satMin: 79,
+        satMax: 100,
+        valMin: 43,
+        valMax: 100,
+        alpMin: 1,
+        alpMax: 1
+      },
+      border: "#111111a0",
+      borderWidth: 1,
+      borderScaleWithZoom: true,
+      circleCake: true,
+      springImage: "assets/textures/spring.png",
+      axleImage: "assets/textures/tools/axle.png",
+      boltImage: "assets/textures/tools/bolt.png"
+    },
+    toolIcons: {
+      drag: "assets/textures/tools/drag.png",
+      addRectangle: "assets/textures/tools/box.png",
+      addCircle: "assets/textures/tools/circle.png",
+      addPerson: "media/icon_square.png",
+      addPolygon: "assets/textures/tools/polygon.png",
+      addSpring: "assets/textures/tools/spring.png",
+      addAxle: "assets/textures/tools/hinge.png",
+      addBolt: "assets/textures/tools/fixjoint.png",
+      select: "assets/textures/tools/move.png",
+      addParticle: "assets/textures/add_particle.png"
+    },
+    systemCursor: true,
+    toolIconSize: 1.8,
+    toolIconOffset: [-1.5, -0.8]
+  },
+  original: {
+    displayName: "Original",
+    author: "asour",
+    description: "Original Simulo theme from 2021",
+    background: "#092f42",
+    person: {
+      color: "#7be891",
+      border: null,
+      borderWidth: null,
+      borderScaleWithZoom: false
+    },
+    ground: {
+      color: "#d8efff",
+      border: null,
+      borderWidth: null,
+      borderScaleWithZoom: false
+    },
+    newObjects: {
+      color: {
+        hueMin: 0,
+        hueMax: 360,
+        satMin: 40,
+        satMax: 50,
+        valMin: 90,
+        valMax: 100,
+        alpMin: 1,
+        alpMax: 1
+      },
+      border: null,
+      borderWidth: null,
+      borderScaleWithZoom: false,
+      circleCake: false,
+      springImage: "assets/textures/spring.png",
+      axleImage: "assets/textures/add_axle.png",
+      boltImage: "assets/textures/add_fixed_joint.png"
+    },
+    toolIcons: {
+      drag: null,
+      addRectangle: "assets/textures/add_rectangle.png",
+      addCircle: "assets/textures/add_circle.png",
+      addPerson: "media/icon_square.png",
+      addPolygon: "assets/textures/add_polygon.png",
+      addSpring: "assets/textures/add_spring.png",
+      addAxle: "assets/textures/add_axle.png",
+      addBolt: "assets/textures/add_fixed_joint.png",
+      select: "assets/textures/select.png",
+      addParticle: "assets/textures/add_particle.png"
+    },
+    systemCursor: false,
+    toolIconSize: 1.4,
+    toolIconOffset: [-1.2, -0.5]
+  },
+  "X-ray": {
+    displayName: "X-ray",
+    author: "asour",
+    description: "if you use it too much it damages your cells",
+    background: "#000000",
+    person: {
+      color: "#ffffff00",
+      border: "#ffffff",
+      borderWidth: 1,
+      borderScaleWithZoom: true
+    },
+    ground: {
+      color: "#ffffff00",
+      border: "#ffffff",
+      borderWidth: 1,
+      borderScaleWithZoom: true
+    },
+    newObjects: {
+      color: {
+        hueMin: 0,
+        hueMax: 0,
+        satMin: 0,
+        satMax: 0,
+        valMin: 100,
+        valMax: 100,
+        alpMin: 0,
+        alpMax: 0
+      },
+      border: "#ffffff",
+      borderWidth: 1,
+      borderScaleWithZoom: true,
+      circleCake: false,
+      springImage: "assets/textures/spring.png",
+      axleImage: "assets/textures/add_axle.png",
+      boltImage: "assets/textures/add_fixed_joint.png"
+    },
+    toolIcons: {
+      drag: null,
+      addRectangle: "assets/textures/add_rectangle.png",
+      addCircle: "assets/textures/add_circle.png",
+      addPerson: "media/icon_square.png",
+      addPolygon: "assets/textures/add_polygon.png",
+      addSpring: "assets/textures/add_spring.png",
+      addAxle: "assets/textures/add_axle.png",
+      addBolt: "assets/textures/add_fixed_joint.png",
+      select: "assets/textures/select.png",
+      addParticle: "assets/textures/add_particle.png"
+    },
+    systemCursor: false,
+    toolIconSize: 1.4,
+    toolIconOffset: [-1.2, -0.5]
   }
 };
 
@@ -26689,19 +26877,19 @@ class SimuloServerController {
         } else if (this.creatingObjects[uuid].shape == "select") {
           let select = this.creatingObjects[uuid];
           if (select.moving) {
-            let dx = formatted.data.x - select.currentX;
-            let dy = formatted.data.y - select.currentY;
+            let dx2 = formatted.data.x - select.currentX;
+            let dy2 = formatted.data.y - select.currentY;
             select.currentX = formatted.data.x;
             select.currentY = formatted.data.y;
             this.selectedObjects[uuid].forEach((obj) => {
               if (obj instanceof SimuloObject) {
                 obj.position = {
-                  x: obj.position.x + dx,
-                  y: obj.position.y + dy
+                  x: obj.position.x + dx2,
+                  y: obj.position.y + dy2
                 };
                 select.initialVelocity = {
-                  x: dx * 10,
-                  y: dy * 10
+                  x: dx2 * 10,
+                  y: dy2 * 10
                 };
                 var touchingBodies = this.physicsServer.getTouchingObjects(obj);
                 for (var i = 0;i < touchingBodies.length; i++) {
@@ -26711,8 +26899,24 @@ class SimuloServerController {
             });
           }
         }
-        this.creatingObjects[uuid].currentX = formatted.data.x;
-        this.creatingObjects[uuid].currentY = formatted.data.y;
+        if (!formatted.data.shift) {
+          this.creatingObjects[uuid].currentX = formatted.data.x;
+          this.creatingObjects[uuid].currentY = formatted.data.y;
+        } else {
+          var dx = formatted.data.x - this.creatingObjects[uuid].x;
+          var dy = formatted.data.y - this.creatingObjects[uuid].y;
+          let size = Math.max(Math.abs(dx), Math.abs(dy));
+          let posX2 = this.creatingObjects[uuid].x + size;
+          let posY2 = this.creatingObjects[uuid].y + size;
+          if (dx < 0) {
+            posX2 = this.creatingObjects[uuid].x - size;
+          }
+          if (dy < 0) {
+            posY2 = this.creatingObjects[uuid].y - size;
+          }
+          this.creatingObjects[uuid].currentX = posX2;
+          this.creatingObjects[uuid].currentY = posY2;
+        }
       }
       if (this.creatingSprings[uuid]) {
         this.creatingSprings[uuid].end = [formatted.data.x, formatted.data.y];
@@ -26900,8 +27104,23 @@ class SimuloServerController {
           return;
         }
         if (this.creatingObjects[uuid].shape == "rectangle") {
-          const width = Math.abs(formatted.data.x - this.creatingObjects[uuid].x);
-          const height = Math.abs(formatted.data.y - this.creatingObjects[uuid].y);
+          let pointB = [formatted.data.x, formatted.data.y];
+          if (formatted.data.shift) {
+            var dx = formatted.data.x - this.creatingObjects[uuid].x;
+            var dy = formatted.data.y - this.creatingObjects[uuid].y;
+            let size = Math.max(Math.abs(dx), Math.abs(dy));
+            let posX2 = this.creatingObjects[uuid].x + size;
+            let posY2 = this.creatingObjects[uuid].y + size;
+            if (dx < 0) {
+              posX2 = this.creatingObjects[uuid].x - size;
+            }
+            if (dy < 0) {
+              posY2 = this.creatingObjects[uuid].y - size;
+            }
+            pointB = [posX2, posY2];
+          }
+          let width = Math.abs(pointB[0] - this.creatingObjects[uuid].x);
+          let height = Math.abs(pointB[1] - this.creatingObjects[uuid].y);
           var bodyData = {
             color: this.creatingObjects[uuid].color,
             border: this.theme.newObjects.border,
@@ -26909,7 +27128,8 @@ class SimuloServerController {
             borderScaleWithZoom: this.theme.newObjects.borderScaleWithZoom,
             id: 92797981789171,
             sound: "impact.wav",
-            image: null
+            image: null,
+            flipImage: true
           };
           const verts = [
             [-width / 2, -height / 2],
@@ -26917,11 +27137,26 @@ class SimuloServerController {
             [width / 2, height / 2],
             [-width / 2, height / 2]
           ];
-          let rectangle = this.physicsServer.addPolygon(verts, [(formatted.data.x + this.creatingObjects[uuid].x) / 2, (formatted.data.y + this.creatingObjects[uuid].y) / 2], 0, 1, 0.5, 0.5, bodyData, false, false);
+          let rectangle = this.physicsServer.addPolygon(verts, [(pointB[0] + this.creatingObjects[uuid].x) / 2, (pointB[1] + this.creatingObjects[uuid].y) / 2], 0, 1, 0.5, 0.5, bodyData, false, false);
           delete this.creatingObjects[uuid];
         } else if (this.creatingObjects[uuid].shape == "select") {
           if (!this.creatingObjects[uuid].moving) {
-            var bodies = this.physicsServer.getObjectsInRect([this.creatingObjects[uuid].x, this.creatingObjects[uuid].y], [formatted.data.x, formatted.data.y]);
+            let pointB = [formatted.data.x, formatted.data.y];
+            if (formatted.data.shift) {
+              var dx = formatted.data.x - this.creatingObjects[uuid].x;
+              var dy = formatted.data.y - this.creatingObjects[uuid].y;
+              let size = Math.max(Math.abs(dx), Math.abs(dy));
+              let posX2 = this.creatingObjects[uuid].x + size;
+              let posY2 = this.creatingObjects[uuid].y + size;
+              if (dx < 0) {
+                posX2 = this.creatingObjects[uuid].x - size;
+              }
+              if (dy < 0) {
+                posY2 = this.creatingObjects[uuid].y - size;
+              }
+              pointB = [posX2, posY2];
+            }
+            var bodies = this.physicsServer.getObjectsInRect([this.creatingObjects[uuid].x, this.creatingObjects[uuid].y], pointB);
             if (bodies.length > 1) {
               bodies = bodies.filter((body) => body.id != 1);
             }
@@ -26949,15 +27184,15 @@ class SimuloServerController {
           }
         } else if (this.creatingObjects[uuid].shape == "square") {
         } else if (this.creatingObjects[uuid].shape == "circle") {
-          const dx = formatted.data.x - this.creatingObjects[uuid].x;
-          const dy = formatted.data.y - this.creatingObjects[uuid].y;
-          const radius2 = Math.max(Math.abs(dx), Math.abs(dy)) / 2;
+          const dx2 = formatted.data.x - this.creatingObjects[uuid].x;
+          const dy2 = formatted.data.y - this.creatingObjects[uuid].y;
+          const radius2 = Math.max(Math.abs(dx2), Math.abs(dy2)) / 2;
           var posX = this.creatingObjects[uuid].x + radius2;
           var posY = this.creatingObjects[uuid].y + radius2;
-          if (dx < 0) {
+          if (dx2 < 0) {
             posX = this.creatingObjects[uuid].x - radius2;
           }
-          if (dy < 0) {
+          if (dy2 < 0) {
             posY = this.creatingObjects[uuid].y - radius2;
           }
           var bodyData = {
@@ -26968,7 +27203,8 @@ class SimuloServerController {
             id: 92797981789171,
             sound: "impact.wav",
             image: null,
-            circleCake: this.creatingObjects[uuid].circleCake
+            circleCake: this.creatingObjects[uuid].circleCake,
+            flipImage: true
           };
           let circle = this.physicsServer.addCircle(radius2, [posX, posY], 0, 1, 0.5, 0.5, bodyData, false);
           delete this.creatingObjects[uuid];
@@ -26985,7 +27221,8 @@ class SimuloServerController {
             borderWidth: this.theme.newObjects.borderWidth,
             borderScaleWithZoom: this.theme.newObjects.borderScaleWithZoom,
             sound: "impact.wav",
-            image: null
+            image: null,
+            flipImage: true
           }, false);
           delete this.creatingObjects[uuid];
         }
@@ -27892,7 +28129,8 @@ class SimuloViewerCanvas {
     this.ctx.strokeStyle = "transparent";
     for (var i = 0;i < this.shapes.length; i++) {
       var shape = this.shapes[i];
-      var shapeSize = 1;
+      let shapeHeight = 0;
+      let shapeWidth = 0;
       this.ctx.fillStyle = shape.color;
       if (shape.border) {
         this.ctx.strokeStyle = shape.border;
@@ -27904,48 +28142,42 @@ class SimuloViewerCanvas {
         let shapePolygon = shape;
         if (!shapePolygon.points) {
           shapePolygon.vertices.forEach(function(vert) {
-            if (Math.abs(vert.x) > shapeSize)
-              shapeSize = Math.abs(vert.x);
-            if (Math.abs(vert.y) > shapeSize)
-              shapeSize = Math.abs(vert.y);
+            if (Math.abs(vert.x) > shapeWidth)
+              shapeWidth = Math.abs(vert.x);
+            if (Math.abs(vert.y) > shapeHeight)
+              shapeHeight = Math.abs(vert.y);
           });
         } else {
           shapePolygon.points.forEach(function(vert) {
-            if (Math.abs(vert.x) > shapeSize)
-              shapeSize = Math.abs(vert.x);
-            if (Math.abs(vert.y) > shapeSize)
-              shapeSize = Math.abs(vert.y);
+            if (Math.abs(vert.x) > shapeWidth)
+              shapeWidth = Math.abs(vert.x);
+            if (Math.abs(vert.y) > shapeHeight)
+              shapeHeight = Math.abs(vert.y);
           });
         }
       } else if (shape.type === "rectangle") {
         let shapeRectangle = shape;
-        shapeSize = Math.abs(shapeRectangle.width / 2);
+        shapeWidth = shapeRectangle.width;
+        shapeHeight = shapeRectangle.height;
+      } else if (shape.type === "circle") {
+        let shapeCircle = shape;
+        shapeWidth = shapeCircle.radius;
+        shapeHeight = shapeCircle.radius;
       }
-      shapeSize = Math.abs(shapeSize / 2.1);
       if (shape.image) {
         var image = this.getImage(shape.image);
         if (image) {
           this.ctx.save();
-          this.ctx.translate(shape.x, shape.y);
-          this.ctx.rotate(shape.angle);
+          let imageTranslation = shape.imageTransformations ? shape.imageTransformations.translate : [0, 0];
+          let imageScale = shape.imageTransformations ? shape.imageTransformations.scale : 1;
+          let imageRotation = shape.imageTransformations ? shape.imageTransformations.rotate : 0;
+          this.ctx.translate(shape.x + imageTranslation[0], shape.y + imageTranslation[1]);
+          this.ctx.rotate(shape.angle + imageRotation);
           this.ctx.rotate(Math.PI);
-          if (!shape.stretchImage) {
-            try {
-              this.ctx.drawImage(image, -shapeSize, -shapeSize * (image.height / image.width), shapeSize * 2, shapeSize * 2 * (image.height / image.width));
-            } catch (e) {
-              console.error(e);
-            }
-          } else {
-            try {
-              if (shape.type === "rectangle") {
-                let shapeRectangle = shape;
-                this.ctx.drawImage(image, -shapeSize, -shapeSize * (shapeRectangle.height / shapeRectangle.width), shapeSize * 2, shapeSize * 2 * (shapeRectangle.height / shapeRectangle.width));
-              } else {
-                this.ctx.drawImage(image, -shapeSize, -shapeSize, shapeSize * 2, shapeSize * 2);
-              }
-            } catch (e) {
-              console.error(e);
-            }
+          try {
+            this.ctx.drawImage(image, -shapeWidth, -shapeHeight, shapeWidth * 2, shapeHeight * 2);
+          } catch (e) {
+            console.error(e);
           }
           this.ctx.restore();
         }
@@ -28283,7 +28515,8 @@ class SimuloClientController {
     y: 0,
     name: "Anonymous",
     down: false,
-    zoom: 1
+    zoom: 1,
+    shift: false
   };
   viewer;
   timeScaleSlider = document.getElementById("time-scale-slider");
@@ -28875,7 +29108,8 @@ class SimuloClientController {
         y: pos.y,
         down: this.viewer.pointerDown,
         name: this.player.name,
-        zoom: this.viewer.cameraZoom
+        zoom: this.viewer.cameraZoom,
+        shift: this.player.shift
       };
       this.mousePos = pos;
       this.client.emitData("player mouse", this.player);
@@ -28887,7 +29121,8 @@ class SimuloClientController {
           y: data.y,
           down: this.viewer.pointerDown,
           name: this.player.name,
-          zoom: this.viewer.cameraZoom
+          zoom: this.viewer.cameraZoom,
+          shift: this.player.shift
         };
         this.mousePos = { x: data.x, y: data.y };
         this.client.emitData("player mouse down", this.player);
@@ -28980,7 +29215,8 @@ class SimuloClientController {
         y: pos.y,
         down: this.viewer.pointerDown,
         name: this.player.name,
-        zoom: this.viewer.cameraZoom
+        zoom: this.viewer.cameraZoom,
+        shift: this.player.shift
       };
       this.mousePos = pos;
       this.client.emitData("player mouse up", this.player);
@@ -29058,6 +29294,16 @@ class SimuloClientController {
       if (e.key == "Delete") {
         this.deleteSelection();
         this.showToast("Deleted selection", ToastType.INFO);
+      }
+      if (e.key == "Shift") {
+        this.player.shift = true;
+        this.client.emitData("player mouse", this.player);
+      }
+    });
+    document.addEventListener("keyup", (e) => {
+      if (e.key == "Shift") {
+        this.player.shift = false;
+        this.client.emitData("player mouse", this.player);
       }
     });
     document.addEventListener("contextmenu", function(e) {
@@ -29619,8 +29865,7 @@ class SimuloClientController {
               image: creatingSpring.image,
               border: null,
               borderWidth: null,
-              borderScaleWithZoom: false,
-              stretchImage: true
+              borderScaleWithZoom: false
             });
             if (creatingSpring.image !== null && creatingSpring.image !== undefined) {
               shapes.push({
@@ -29682,8 +29927,7 @@ class SimuloClientController {
               image: spring.image,
               border: null,
               borderWidth: null,
-              borderScaleWithZoom: false,
-              stretchImage: true
+              borderScaleWithZoom: false
             });
             if (spring.image !== null && spring.image !== undefined) {
               shapes.push({
@@ -30043,4 +30287,4 @@ var framerate = 30;
 var speed = 300 / framerate;
 speed = Math.round(speed / 8) * 8;
 
-//# debugId=B8800E8D82EC518C64756e2164756e21
+//# debugId=CF521068DD3CB3F064756e2164756e21

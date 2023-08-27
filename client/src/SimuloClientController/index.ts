@@ -198,6 +198,7 @@ class SimuloClientController {
         name: 'Anonymous',
         down: false,
         zoom: 1,
+        shift: false,
     };
 
     viewer: SimuloViewer;
@@ -988,7 +989,8 @@ class SimuloClientController {
                 y: pos.y,
                 down: this.viewer.pointerDown,
                 name: this.player.name,
-                zoom: this.viewer.cameraZoom
+                zoom: this.viewer.cameraZoom,
+                shift: this.player.shift
             };
             this.mousePos = pos;
             this.client.emitData("player mouse", this.player);
@@ -1000,7 +1002,8 @@ class SimuloClientController {
                     y: data.y,
                     down: this.viewer.pointerDown,
                     name: this.player.name,
-                    zoom: this.viewer.cameraZoom
+                    zoom: this.viewer.cameraZoom,
+                    shift: this.player.shift
                 };
                 this.mousePos = { x: data.x, y: data.y };
                 this.client.emitData("player mouse down", this.player);
@@ -1100,7 +1103,8 @@ class SimuloClientController {
                 y: pos.y,
                 down: this.viewer.pointerDown,
                 name: this.player.name,
-                zoom: this.viewer.cameraZoom
+                zoom: this.viewer.cameraZoom,
+                shift: this.player.shift
             };
             this.mousePos = pos;
             this.client.emitData("player mouse up", this.player);
@@ -1193,6 +1197,21 @@ class SimuloClientController {
             if (e.key == 'Delete') {
                 this.deleteSelection();
                 this.showToast('Deleted selection', ToastType.INFO);
+            }
+
+            // if its shift
+            if (e.key == 'Shift') {
+                this.player.shift = true;
+                // yes its a bit weird to use mouse update, but thats where the logic for updating shapes is, so this is best
+                // if this bothers you too much, consider making a PR renaming `player mouse` to a better name
+                // but `player update` wouldnt work that well since this is just for mouse or shift
+                this.client.emitData("player mouse", this.player);
+            }
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key == 'Shift') {
+                this.player.shift = false;
+                this.client.emitData("player mouse", this.player);
             }
         });
 
@@ -1928,7 +1947,6 @@ class SimuloClientController {
                             border: null,
                             borderWidth: null,
                             borderScaleWithZoom: false,
-                            stretchImage: true
                         } as SimuloRectangle);
 
                         if (creatingSpring.image !== null && creatingSpring.image !== undefined) {
@@ -1971,7 +1989,6 @@ class SimuloClientController {
                             border: null,
                             borderWidth: null,
                             borderScaleWithZoom: false,
-                            stretchImage: true
                         } as SimuloRectangle);
 
                         if (spring.image !== null && spring.image !== undefined) {

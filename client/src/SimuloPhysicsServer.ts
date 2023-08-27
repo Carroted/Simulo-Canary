@@ -431,6 +431,11 @@ class SimuloObject {
             }
         }
     }
+    get flipImage(): boolean {
+        let parentData = this._body.GetUserData() as SimuloParentData;
+        let objectData = parentData.objects[this.id];
+        return objectData.flipImage ?? false;
+    }
 }
 
 function createSandboxedInstance(targetClass: any): any {
@@ -656,6 +661,7 @@ interface SimuloSavedObject {
     type: SimuloObjectType;
     radius: number | undefined;
     parentID: number;
+    flipImage: boolean;
     // TODO: when scripting is added, add script here and have it call save() on script and push the return value here if it isnt circular
 }
 
@@ -797,6 +803,7 @@ class SimuloPhysicsServer {
             circleCake: data['circleCake'] ?? false,
             image: data['image'] ?? null,
             zDepth: this.highestZDepth++,
+            flipImage: data['flipImage'] ?? false
         };
 
         if (decompose) {
@@ -1186,6 +1193,7 @@ class SimuloPhysicsServer {
             circleCake: data['circleCake'] ?? false,
             image: data['image'] ?? null,
             zDepth: this.highestZDepth++,
+            flipImage: true
         };
 
         parentData.objects[id] = objectData;
@@ -1285,6 +1293,7 @@ class SimuloPhysicsServer {
             circleCake: false,
             image: null,
             zDepth: this.highestZDepth++,
+            flipImage: true
         };
         groundParentData.id = 1;
         groundParentData.objects[0] = groundData;
@@ -1387,6 +1396,7 @@ class SimuloPhysicsServer {
             circleCake: false,
             image: null,
             zDepth: this.highestZDepth++,
+            flipImage: true,
             points: [
                 [floorShape.get_m_vertices(0).get_x(), floorShape.get_m_vertices(0).get_y()],
                 [floorShape.get_m_vertices(1).get_x(), floorShape.get_m_vertices(1).get_y()],
@@ -1737,7 +1747,8 @@ class SimuloPhysicsServer {
                 points: o.points,
                 radius: o.radius,
                 name: o.name ? o.name : null,
-                parentID: o.parentID
+                parentID: o.parentID,
+                flipImage: o.flipImage,
             };
         });
         return savedStuff;
@@ -1799,7 +1810,8 @@ class SimuloPhysicsServer {
                         image: o.image,
                         sound: o.sound,
                         color: o.color,
-                        name: (o.name === null ? undefined : o.name)
+                        name: (o.name === null ? undefined : o.name),
+                        flipImage: o.flipImage
                     }, o.isStatic);
                 }
             }
@@ -1813,7 +1825,8 @@ class SimuloPhysicsServer {
                     image: o.image,
                     sound: o.sound,
                     color: o.color,
-                    name: (o.name === null ? undefined : o.name)
+                    name: (o.name === null ? undefined : o.name),
+                    flipImage: o.flipImage
                 }, o.isStatic);
             }
             if (obj) {
@@ -2056,6 +2069,11 @@ class SimuloPhysicsServer {
                         image: objectData.image,
                         id: objectData.id,
                         zDepth: objectData.zDepth,
+                        imageTransformations: {
+                            scale: 1,
+                            rotate: objectData.flipImage ? Math.PI : 0,
+                            translate: [0, 0],
+                        }
                     } as SimuloCircle);
                 } else if (shapeType == box2D.b2Shape.e_polygon) {
                     const polygonShape = box2D.castObject(shape, box2D.b2PolygonShape);
@@ -2091,6 +2109,11 @@ class SimuloPhysicsServer {
                             id: objectData.id,
                             zDepth: objectData.zDepth,
                             decomposedParts: objectData.decomposedParts,
+                            imageTransformations: {
+                                scale: 1,
+                                rotate: objectData.flipImage ? Math.PI : 0,
+                                translate: [0, 0],
+                            }
                         } as SimuloPolygon);
                     }
                     else {
@@ -2108,6 +2131,11 @@ class SimuloPhysicsServer {
                             id: objectData.id,
                             zDepth: objectData.zDepth,
                             decomposedParts: objectData.decomposedParts,
+                            imageTransformations: {
+                                scale: 1,
+                                rotate: objectData.flipImage ? Math.PI : 0,
+                                translate: [0, 0],
+                            }
                         } as SimuloPolygon);
                     }
                 } else if (shapeType == box2D.b2Shape.e_edge) {
@@ -2137,6 +2165,11 @@ class SimuloPhysicsServer {
                         image: objectData.image,
                         id: objectData.id,
                         zDepth: objectData.zDepth,
+                        imageTransformations: {
+                            scale: 1,
+                            rotate: objectData.flipImage ? Math.PI : 0,
+                            translate: [0, 0],
+                        }
                     } as SimuloEdge);
                 } else {
                     //console.log("unknown shape type");
