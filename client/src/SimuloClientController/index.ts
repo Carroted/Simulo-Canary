@@ -498,7 +498,7 @@ class SimuloClientController {
         // Since it loops back, we can use the exact same code for both host and client, excluding the networking code.
 
         // try to fetch /version and set #version-info text
-        fetch('../../version.json').then(async (response) => {
+        fetch('../version.json').then(async (response) => {
             if (response.ok) {
                 let version = await response.json();
                 let versionInfo = document.getElementById('version-info');
@@ -513,7 +513,7 @@ class SimuloClientController {
                 let headers = new Headers();
                 headers.append('pragma', 'no-cache');
                 headers.append('cache-control', 'no-cache');
-                let response2 = await fetch('../../version.json', {
+                let response2 = await fetch('../version.json', {
                     headers
                 });
                 // make sure also ok, otherwise just keep old one

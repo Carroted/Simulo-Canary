@@ -28500,7 +28500,7 @@ class SimuloClientController {
       let networkClient = new SimuloNetworkClient_default;
       this.client = networkClient;
     }
-    fetch("../../version.json").then(async (response) => {
+    fetch("../version.json").then(async (response) => {
       if (response.ok) {
         let version = await response.json();
         let versionInfo = document.getElementById("version-info");
@@ -28513,7 +28513,7 @@ class SimuloClientController {
         let headers = new Headers;
         headers.append("pragma", "no-cache");
         headers.append("cache-control", "no-cache");
-        let response2 = await fetch("../../version.json", {
+        let response2 = await fetch("../version.json", {
           headers
         });
         if (response2.ok) {
@@ -30043,4 +30043,4 @@ var framerate = 30;
 var speed = 300 / framerate;
 speed = Math.round(speed / 8) * 8;
 
-//# debugId=CD829A0154B308A564756e2164756e21
+//# debugId=B8800E8D82EC518C64756e2164756e21
